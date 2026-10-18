@@ -6,9 +6,9 @@ namespace SoftWfcAco;
 public sealed class Cell
 {
     public GridPos Position { get; }
-    public bool IsCollapsed { get; set; }
+    public bool IsCollapsed { get; internal set; }
     public List<TileVariant> AvailableVariants { get; }
-    public TileVariant? CollapsedVariant { get; set; }
+    public TileVariant? CollapsedVariant { get; internal set; }
 
     public Cell(GridPos position, List<TileVariant> allVariants)
     {
