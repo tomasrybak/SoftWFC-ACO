@@ -250,7 +250,7 @@ namespace SoftWfcAco
         }
 
         /// <summary>
-        /// Collapses a cell by choosing a random variant from its available variants.
+        /// Collapses a cell by choosing a weighted random variant from its available variants.
         /// </summary>
         /// <param name="cell">Cell to be collapsed</param>
         private void CollapseCell(Cell cell)
@@ -260,8 +260,7 @@ namespace SoftWfcAco
                 return;
             }
 
-            int randomIndex = rng.Next(0, cell.AvailableVariants.Count);
-            cell.CollapsedVariant = cell.AvailableVariants[randomIndex];
+            cell.CollapsedVariant = PickWeighted(cell.AvailableVariants);
 
             List<TileVariant> toRemove = new List<TileVariant>();
 
@@ -279,6 +278,32 @@ namespace SoftWfcAco
             }
 
             cell.IsCollapsed = true;
+        }
+
+        /// <summary>
+        /// Roulette-wheel selection: each variant's chance is proportional to its weight.
+        /// </summary>
+        private TileVariant PickWeighted(List<TileVariant> variants)
+        {
+            double total = 0;
+            foreach (var v in variants)
+            {
+                total += v.Weight;
+            }
+
+            double roll = rng.NextDouble() * total;
+            double cumulative = 0;
+            foreach (var v in variants)
+            {
+                cumulative += v.Weight;
+                if (roll < cumulative)
+                {
+                    return v;
+                }
+            }
+
+            // Floating point rounding can leave roll == total
+            return variants[^1];
         }
 
         /// <summary>

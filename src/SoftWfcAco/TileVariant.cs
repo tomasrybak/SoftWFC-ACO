@@ -13,13 +13,22 @@ public sealed class TileVariant
     /// <summary>Indexes 0:N, 1:E, 2:S, 3:W.</summary>
     public string[] Sockets { get; }
 
-    public TileVariant(TileDef def, int rotation)
+    /// <summary>
+    /// Selection weight. The tile's weight is split across its rotations, so TileDef.Weight
+    /// controls how often the tile type appears regardless of how many rotations it has.
+    /// </summary>
+    public float Weight { get; }
+
+    public TileVariant(TileDef def, int rotation, int rotationCount)
     {
         if (def.Sockets.Length != 4)
             throw new ArgumentException($"Tile '{def.Name}' must have exactly 4 sockets (N, E, S, W).");
+        if (def.Weight <= 0)
+            throw new ArgumentException($"Tile '{def.Name}' must have a positive weight.");
 
         Def = def;
         Rotation = rotation;
+        Weight = def.Weight / rotationCount;
         Sockets = new string[4];
         for (int i = 0; i < 4; i++)
             Sockets[i] = def.Sockets[(i - rotation + 4) % 4];
@@ -33,7 +42,7 @@ public sealed class TileVariant
         {
             int rotations = def.Rotatable ? 4 : 1;
             for (int r = 0; r < rotations; r++)
-                variants.Add(new TileVariant(def, r));
+                variants.Add(new TileVariant(def, r, rotations));
         }
         return variants;
     }
