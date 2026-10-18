@@ -71,6 +71,10 @@ dotnet test
 dotnet run -c Release --project bench/SoftWfcAco.Bench -- 30 30 100 0   # width depth runs firstSeed
 ```
 
+Bench options: `--csv <file>` (one row per run), `--png <dir>` (map of every run, mismatched
+edges in red), `--frames <dir> --every <n>` (collapse frames of the first run), `--ascii`
+(print the first map).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

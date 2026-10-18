@@ -1,34 +1,77 @@
 using System.Diagnostics;
+using System.Globalization;
 using SoftWfcAco;
+using SoftWfcAco.Viz;
 
-// Usage: SoftWfcAco.Bench [width] [depth] [runs] [firstSeed]
+// Usage: SoftWfcAco.Bench [width] [depth] [runs] [firstSeed] [options]
+//   --csv <file>      one row per run
+//   --png <dir>       final map of every run, mismatched edges in red
+//   --frames <dir>    collapse frames of the first run
+//   --every <n>       collapses between frames (default 10)
+//   --ascii           print the first run's map
 // Run i uses seed firstSeed + i, so every result can be reproduced individually.
-int width = args.Length > 0 ? int.Parse(args[0]) : 30;
-int depth = args.Length > 1 ? int.Parse(args[1]) : 30;
-int runs = args.Length > 2 ? int.Parse(args[2]) : 100;
-int firstSeed = args.Length > 3 ? int.Parse(args[3]) : 0;
+List<string> positional = new List<string>();
+Dictionary<string, string> options = new Dictionary<string, string>();
+
+for (int i = 0; i < args.Length; i++)
+{
+    if (!args[i].StartsWith("--"))
+    {
+        positional.Add(args[i]);
+    }
+    else if (args[i] == "--ascii")
+    {
+        options["ascii"] = "";
+    }
+    else if (i + 1 < args.Length)
+    {
+        options[args[i][2..]] = args[++i];
+    }
+    else
+    {
+        Console.Error.WriteLine($"Missing value for {args[i]}");
+        return 1;
+    }
+}
+
+int width = positional.Count > 0 ? int.Parse(positional[0]) : 30;
+int depth = positional.Count > 1 ? int.Parse(positional[1]) : 30;
+int runs = positional.Count > 2 ? int.Parse(positional[2]) : 100;
+int firstSeed = positional.Count > 3 ? int.Parse(positional[3]) : 0;
+int every = options.TryGetValue("every", out string? everyArg) ? int.Parse(everyArg) : 10;
 
 List<TileVariant> variants = TileVariant.Expand(BenchTiles.All);
 
 int successes = 0;
 int invalid = 0;
-var times = new List<double>(runs);
+List<double> times = new List<double>(runs);
+
+StreamWriter? csv = null;
+if (options.TryGetValue("csv", out string? csvPath))
+{
+    string? csvDir = Path.GetDirectoryName(csvPath);
+    if (!string.IsNullOrEmpty(csvDir))
+    {
+        Directory.CreateDirectory(csvDir);
+    }
+
+    csv = new StreamWriter(csvPath);
+    csv.WriteLine("seed,width,depth,success,invalid,time_ms");
+}
 
 for (int i = 0; i < runs; i++)
 {
-    var rng = new Random(firstSeed + i);
-    var grid = new Cell[width, depth];
-    for (int x = 0; x < width; x++)
-        for (int z = 0; z < depth; z++)
-            grid[x, z] = new Cell(new GridPos(x, z), variants);
+    int seed = firstSeed + i;
+    Cell[,] grid = NewGrid();
 
-    var sw = Stopwatch.StartNew();
-    var wfc = new WFCSolver(grid, width, depth, rng);
+    Stopwatch sw = Stopwatch.StartNew();
+    WFCSolver wfc = new WFCSolver(grid, width, depth, new Random(seed));
     bool ok = wfc.RunWFC();
     sw.Stop();
 
     // A success is counted only if the map passes the independent validator
-    if (ok && MapValidator.Validate(grid).Count == 0)
+    bool valid = ok && MapValidator.Validate(grid).Count == 0;
+    if (valid)
     {
         successes++;
     }
@@ -38,7 +81,35 @@ for (int i = 0; i < runs; i++)
     }
 
     times.Add(sw.Elapsed.TotalMilliseconds);
+
+    // Invariant culture: a Czech locale would write decimal commas into the CSV
+    csv?.WriteLine(string.Create(CultureInfo.InvariantCulture,
+        $"{seed},{width},{depth},{(valid ? 1 : 0)},{(ok && !valid ? 1 : 0)},{sw.Elapsed.TotalMilliseconds:F3}"));
+
+    // Images come from a separate, untimed run. RunWFC keeps collapsing after a contradiction
+    // without propagating, so its failed maps don't show where generation broke.
+    if (options.TryGetValue("png", out string? pngDir))
+    {
+        Cell[,] imageGrid = NewGrid();
+        StepwiseRun.Run(new WFCSolver(imageGrid, width, depth, new Random(seed)));
+        RgbImage image = MapImage.Render(imageGrid, MapValidator.Validate(imageGrid));
+        PngWriter.Save(image, Path.Combine(pngDir, $"seed{seed:D4}.png"));
+    }
+
+    if (i == 0 && options.TryGetValue("frames", out string? framesDir))
+    {
+        Cell[,] frameGrid = NewGrid();
+        StepwiseRun.Run(new WFCSolver(frameGrid, width, depth, new Random(seed)), every,
+            step => PngWriter.Save(MapImage.Render(frameGrid), Path.Combine(framesDir, $"step{step:D5}.png")));
+    }
+
+    if (i == 0 && options.ContainsKey("ascii"))
+    {
+        Console.WriteLine(AsciiMap.Render(grid));
+    }
 }
+
+csv?.Dispose();
 
 times.Sort();
 Console.WriteLine($"Pure WFC {width}x{depth}, {runs} runs, seeds {firstSeed}..{firstSeed + runs - 1}");
@@ -49,6 +120,23 @@ if (invalid > 0)
 }
 
 Console.WriteLine($"  time (ms):     median {times[runs / 2]:F2}, mean {times.Average():F2}, max {times[^1]:F2}");
+return 0;
+
+// Fresh uncollapsed grid where every cell allows all variants
+Cell[,] NewGrid()
+{
+    Cell[,] grid = new Cell[width, depth];
+
+    for (int x = 0; x < width; x++)
+    {
+        for (int z = 0; z < depth; z++)
+        {
+            grid[x, z] = new Cell(new GridPos(x, z), variants);
+        }
+    }
+
+    return grid;
+}
 
 /// <summary>
 /// Small land/road/water smoke-test tile set. Pure WFC always solves it; contradiction-prone
@@ -58,11 +146,11 @@ static class BenchTiles
 {
     public static readonly TileDef[] All =
     [
-        new() { Name = "grass", Sockets = ["grass", "grass", "grass", "grass"], Weight = 10 },
-        new() { Name = "path_straight", Sockets = ["path", "grass", "path", "grass"], Weight = 1, Rotatable = true },
-        new() { Name = "path_corner", Sockets = ["path", "path", "grass", "grass"], Weight = 1, Rotatable = true },
-        new() { Name = "path_end", Sockets = ["path", "grass", "grass", "grass"], Weight = 0.2f, Rotatable = true },
-        new() { Name = "water", Sockets = ["water", "water", "water", "water"], Weight = 4, Walkable = false },
-        new() { Name = "shore", Sockets = ["water", "grass", "grass", "grass"], Weight = 0.5f, Rotatable = true, Walkable = false },
+        new TileDef { Name = "grass", Sockets = ["grass", "grass", "grass", "grass"], Weight = 10 },
+        new TileDef { Name = "path_straight", Sockets = ["path", "grass", "path", "grass"], Weight = 1, Rotatable = true },
+        new TileDef { Name = "path_corner", Sockets = ["path", "path", "grass", "grass"], Weight = 1, Rotatable = true },
+        new TileDef { Name = "path_end", Sockets = ["path", "grass", "grass", "grass"], Weight = 0.2f, Rotatable = true },
+        new TileDef { Name = "water", Sockets = ["water", "water", "water", "water"], Weight = 4, Walkable = false },
+        new TileDef { Name = "shore", Sockets = ["water", "grass", "grass", "grass"], Weight = 0.5f, Rotatable = true, Walkable = false },
     ];
 }
