@@ -5,4 +5,7 @@
   <Folder Name="/src/">
     <Project Path="src/SoftWfcAco/SoftWfcAco.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SoftWfcAco.Tests/SoftWfcAco.Tests.csproj" />
+  </Folder>
 </Solution>

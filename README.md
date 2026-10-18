@@ -56,6 +56,7 @@ Results will be added here as they're measured.
 ```
 src/SoftWfcAco/          the library: WFCSolver, ACOHybridSolver, Ant, tiles and grid types
 bench/SoftWfcAco.Bench/  seeded benchmark runner
+tests/SoftWfcAco.Tests/  unit tests and seed-sweep validity tests (xUnit)
 ```
 
 ## Build and run
@@ -64,6 +65,7 @@ Requires the .NET 10 SDK.
 
 ```sh
 dotnet build -c Release
+dotnet test
 dotnet run -c Release --project bench/SoftWfcAco.Bench -- 30 30 100 0   # width depth runs firstSeed
 ```
 

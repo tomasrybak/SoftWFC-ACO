@@ -1,3 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- WFC + ACO generator library. Pure C#, no engine or rendering dependencies. -->
+  <ItemGroup>
+    <!-- Tests build hand-made collapsed grids through Cell's internal setters. -->
+    <InternalsVisibleTo Include="SoftWfcAco.Tests" />
+  </ItemGroup>
 </Project>
