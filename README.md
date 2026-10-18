@@ -44,6 +44,7 @@ All benchmarks use fixed seed lists, so every number can be reproduced. The thes
 | Port of the thesis WFC + ACO solvers to engine-agnostic .NET (2D grid) | done |
 | Weighted collapse (tile weights were stored but unused in the thesis) | done |
 | Seeded benchmark runner (pure WFC) | done |
+| Map validator, test suite, ASCII/PNG output | done |
 | Per-cell priors + weighted entropy | next |
 | Heightmap prior, softness sweep | planned |
 | Pheromone prior: soft vs hard comparison | planned |
@@ -54,7 +55,8 @@ Results will be added here as they're measured.
 ## Layout
 
 ```
-src/SoftWfcAco/          the library: WFCSolver, ACOHybridSolver, Ant, tiles and grid types
+src/SoftWfcAco/          the library: WFCSolver, ACOHybridSolver, Ant, MapValidator, tiles and grid types
+src/SoftWfcAco.Viz/      debug output: ASCII and PNG maps, step-by-step collapse frames
 bench/SoftWfcAco.Bench/  seeded benchmark runner
 tests/SoftWfcAco.Tests/  unit tests and seed-sweep validity tests (xUnit)
 ```

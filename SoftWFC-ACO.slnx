@@ -3,6 +3,7 @@
     <Project Path="bench/SoftWfcAco.Bench/SoftWfcAco.Bench.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/SoftWfcAco.Viz/SoftWfcAco.Viz.csproj" />
     <Project Path="src/SoftWfcAco/SoftWfcAco.csproj" />
   </Folder>
   <Folder Name="/tests/">

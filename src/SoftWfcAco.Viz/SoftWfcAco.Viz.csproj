@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Debug output for generated maps (ASCII, PNG). Kept out of the library so it stays output-free. -->
+  <ItemGroup>
+    <ProjectReference Include="..\SoftWfcAco\SoftWfcAco.csproj" />
+  </ItemGroup>
+</Project>

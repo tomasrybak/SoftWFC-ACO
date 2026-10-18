@@ -15,5 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SoftWfcAco\SoftWfcAco.csproj" />
+    <ProjectReference Include="..\..\src\SoftWfcAco.Viz\SoftWfcAco.Viz.csproj" />
   </ItemGroup>
 </Project>
