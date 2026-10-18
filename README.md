@@ -12,6 +12,10 @@ The thesis assignment originally asked for **soft constraints**, where pheromone
 
 This repository is that further work.
 
+## Scope
+
+The thesis generated 3D voxel environments. This library targets **2D tile grids**, because I'm using it to generate the overworld in a top-down game. Tile sets are plain data (sockets and weights) instead of hand-modelled Unity prefabs, so larger and more varied tile sets are cheap to try.
+
 ## Approach
 
 Each cell gets its own weight for each tile variant:
@@ -29,6 +33,7 @@ w(cell, v) = baseWeight(v) × prior(cell, v)
 1. Does the contradiction rate rise with soft constraints compared with hard ones, and at what softness?
 2. When a run fails, is the cause the ACO path search or a WFC contradiction? The thesis didn't separate the two.
 3. How do time and map quality scale above the ~5000 cells the thesis tested?
+4. Does the hard vs soft result hold across tile sets, from a complete set (a tile for every socket combination) to a sparse one?
 
 All benchmarks use fixed seed lists, so every number can be reproduced. The thesis benchmarks were unseeded.
 
