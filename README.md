@@ -59,6 +59,7 @@ src/SoftWfcAco/          the library: WFCSolver, ACOHybridSolver, Ant, MapValida
 src/SoftWfcAco.Viz/      debug output: ASCII and PNG maps, step-by-step collapse frames
 bench/SoftWfcAco.Bench/  seeded benchmark runner
 tests/SoftWfcAco.Tests/  unit tests and seed-sweep validity tests (xUnit)
+docs/decisions/          architecture decision records
 ```
 
 ## Build and run
