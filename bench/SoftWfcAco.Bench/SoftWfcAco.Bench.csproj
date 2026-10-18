@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Seeded benchmark runner. Results must be reproducible from the seed list alone. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SoftWfcAco\SoftWfcAco.csproj" />
+  </ItemGroup>
+</Project>
