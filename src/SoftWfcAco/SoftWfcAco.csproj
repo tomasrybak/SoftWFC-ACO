@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- WFC + ACO generator library. Pure C#, no engine or rendering dependencies. -->
+</Project>
