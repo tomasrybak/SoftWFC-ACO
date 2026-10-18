@@ -11,6 +11,7 @@ int firstSeed = args.Length > 3 ? int.Parse(args[3]) : 0;
 List<TileVariant> variants = TileVariant.Expand(BenchTiles.All);
 
 int successes = 0;
+int invalid = 0;
 var times = new List<double>(runs);
 
 for (int i = 0; i < runs; i++)
@@ -26,13 +27,27 @@ for (int i = 0; i < runs; i++)
     bool ok = wfc.RunWFC();
     sw.Stop();
 
-    if (ok) successes++;
+    // A success is counted only if the map passes the independent validator
+    if (ok && MapValidator.Validate(grid).Count == 0)
+    {
+        successes++;
+    }
+    else if (ok)
+    {
+        invalid++;
+    }
+
     times.Add(sw.Elapsed.TotalMilliseconds);
 }
 
 times.Sort();
 Console.WriteLine($"Pure WFC {width}x{depth}, {runs} runs, seeds {firstSeed}..{firstSeed + runs - 1}");
 Console.WriteLine($"  success rate:  {100.0 * successes / runs:F1} %");
+if (invalid > 0)
+{
+    Console.WriteLine($"  INVALID:       {invalid} runs reported success but failed validation");
+}
+
 Console.WriteLine($"  time (ms):     median {times[runs / 2]:F2}, mean {times.Average():F2}, max {times[^1]:F2}");
 
 /// <summary>
