@@ -25,6 +25,9 @@ namespace SoftWfcAco
 
         public bool HasContradiction => contradictionFound;
 
+        // Kept in sync by CollapseCell and RestoreSnapshot so IsFullyCollapsed is O(1)
+        private int uncollapsedCount;
+
         private readonly Random rng;
 
         /// <summary>
@@ -51,6 +54,7 @@ namespace SoftWfcAco
         private void InitializeEntropyHeap()
         {
             entropyHeap.Clear();
+            uncollapsedCount = 0;
             foreach (var cell in grid)
             {
                 if (cell.IsCollapsed)
@@ -58,6 +62,7 @@ namespace SoftWfcAco
                     continue;
                 }
 
+                uncollapsedCount++;
                 entropyHeap.Enqueue(cell, cell.Entropy);
             }
         }
@@ -181,14 +186,7 @@ namespace SoftWfcAco
         /// <returns>True if the map is fully collapsed, false otherwise</returns>
         public bool IsFullyCollapsed()
         {
-            foreach (var cell in grid)
-            {
-                if (!cell.IsCollapsed)
-                {
-                    return false;
-                }
-            }
-            return true;
+            return uncollapsedCount == 0;
         }
 
         /// <summary>
@@ -277,6 +275,10 @@ namespace SoftWfcAco
                 RemoveVariantFromCell(cell, variant);
             }
 
+            if (!cell.IsCollapsed)
+            {
+                uncollapsedCount--;
+            }
             cell.IsCollapsed = true;
         }
 
@@ -445,6 +447,10 @@ namespace SoftWfcAco
                 record.cell.AvailableVariants.Add(record.removedVariant);
 
                 // Reset the cell's collapsed variant to null
+                if (record.cell.IsCollapsed)
+                {
+                    uncollapsedCount++;
+                }
                 record.cell.IsCollapsed = false;
                 record.cell.CollapsedVariant = null;
             }
