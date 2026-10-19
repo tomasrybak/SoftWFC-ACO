@@ -10,7 +10,7 @@ public sealed class Cell
     public List<TileVariant> AvailableVariants { get; }
     public TileVariant? CollapsedVariant { get; internal set; }
 
-    public Cell(GridPos position, List<TileVariant> allVariants)
+    public Cell(GridPos position, IEnumerable<TileVariant> allVariants)
     {
         Position = position;
         AvailableVariants = new List<TileVariant>(allVariants);
