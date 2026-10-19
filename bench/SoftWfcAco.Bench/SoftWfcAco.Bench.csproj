@@ -8,4 +8,9 @@
     <ProjectReference Include="..\..\src\SoftWfcAco\SoftWfcAco.csproj" />
     <ProjectReference Include="..\..\src\SoftWfcAco.Viz\SoftWfcAco.Viz.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tile sets next to the executable, so the default set works from any directory -->
+    <None Include="..\..\data\tilesets\*.json" Link="tilesets\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

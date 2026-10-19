@@ -1,0 +1,11 @@
+// Small land/road/water smoke-test set, formerly built into the bench. Pure WFC always solves it.
+{
+  "tiles": [
+    { "name": "grass",         "sockets": ["grass", "grass", "grass", "grass"], "weight": 10 },
+    { "name": "path_straight", "sockets": ["path", "grass", "path", "grass"], "weight": 1, "rotatable": true },
+    { "name": "path_corner",   "sockets": ["path", "path", "grass", "grass"], "weight": 1, "rotatable": true },
+    { "name": "path_end",      "sockets": ["path", "grass", "grass", "grass"], "weight": 0.2, "rotatable": true },
+    { "name": "water",         "sockets": ["water", "water", "water", "water"], "weight": 4, "walkable": false },
+    { "name": "shore",         "sockets": ["water", "grass", "grass", "grass"], "weight": 0.5, "rotatable": true, "walkable": false }
+  ]
+}

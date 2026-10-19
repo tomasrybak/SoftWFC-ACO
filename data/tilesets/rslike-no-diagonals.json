@@ -1,0 +1,47 @@
+// Sparse benchmark set: rslike-overworld.json without the two shore_diag_* tiles.
+// Checkerboard corner layouts then have no fitting tile, so WFC can contradict.
+//
+// Overworld tile set for WFC. See RSlike's docs/tiles.md for the format and design rules.
+//
+// Water/land tiles are corner-based: each corner (NW, NE, SE, SW) is land (g) or water (w), and a side's
+// socket is its two corners read in a fixed order: N and S sides west→east, E and W sides north→south.
+//   gg = "grass", ww = "water", gw = "shore_gw", wg = "shore_wg"
+// Neighbours share the two corners of their common side, so equal sockets keep the coastline continuous.
+// Shore tiles are written per orientation because socket names don't rotate (RSlike docs/tiles.md, rule 3).
+{
+  "tiles": [
+    // Land
+    { "name": "grass",  "sockets": ["grass", "grass", "grass", "grass"], "weight": 10, "ground": "grass" },
+    { "name": "forest", "sockets": ["grass", "grass", "grass", "grass"], "weight": 2, "ground": "grass", "prop": "tree", "walkable": false },
+    { "name": "rocks",  "sockets": ["grass", "grass", "grass", "grass"], "weight": 0.3, "ground": "grass", "prop": "rock", "walkable": false },
+
+    // Roads
+    { "name": "path_straight", "sockets": ["path", "grass", "path", "grass"], "weight": 1, "rotatable": true, "ground": "path" },
+    { "name": "path_corner",   "sockets": ["path", "path", "grass", "grass"], "weight": 1, "rotatable": true, "ground": "path" },
+    { "name": "path_t",        "sockets": ["path", "path", "path", "grass"], "weight": 0.2, "rotatable": true, "ground": "path" },
+    { "name": "path_cross",    "sockets": ["path", "path", "path", "path"], "weight": 0.1, "ground": "path" },
+    { "name": "path_end",      "sockets": ["path", "grass", "grass", "grass"], "weight": 0.2, "rotatable": true, "ground": "path" },
+
+    // Open water
+    { "name": "water", "sockets": ["water", "water", "water", "water"], "weight": 4, "ground": "water", "walkable": false },
+
+    // Straight shores, named by the side the water is on
+    { "name": "shore_n", "sockets": ["water", "shore_wg", "grass", "shore_wg"], "weight": 0.5, "ground": "sand" },
+    { "name": "shore_e", "sockets": ["shore_gw", "water", "shore_gw", "grass"], "weight": 0.5, "ground": "sand" },
+    { "name": "shore_s", "sockets": ["grass", "shore_gw", "water", "shore_gw"], "weight": 0.5, "ground": "sand" },
+    { "name": "shore_w", "sockets": ["shore_wg", "grass", "shore_wg", "water"], "weight": 0.5, "ground": "sand" },
+
+    // One water corner: convex lake corner, seen from land
+    { "name": "water_corner_ne", "sockets": ["shore_gw", "shore_wg", "grass", "grass"], "weight": 0.3, "ground": "sand" },
+    { "name": "water_corner_se", "sockets": ["grass", "shore_gw", "shore_gw", "grass"], "weight": 0.3, "ground": "sand" },
+    { "name": "water_corner_sw", "sockets": ["grass", "grass", "shore_wg", "shore_gw"], "weight": 0.3, "ground": "sand" },
+    { "name": "water_corner_nw", "sockets": ["shore_wg", "grass", "grass", "shore_wg"], "weight": 0.3, "ground": "sand" },
+
+    // One land corner: concave lake corner, land reaching into water
+    { "name": "land_corner_ne", "sockets": ["shore_wg", "shore_gw", "water", "water"], "weight": 0.3, "ground": "sand" },
+    { "name": "land_corner_se", "sockets": ["water", "shore_wg", "shore_wg", "water"], "weight": 0.3, "ground": "sand" },
+    { "name": "land_corner_sw", "sockets": ["water", "water", "shore_gw", "shore_wg"], "weight": 0.3, "ground": "sand" },
+    { "name": "land_corner_nw", "sockets": ["shore_gw", "water", "water", "shore_gw"], "weight": 0.3, "ground": "sand" },
+
+  ]
+}

@@ -4,6 +4,7 @@ using SoftWfcAco;
 using SoftWfcAco.Viz;
 
 // Usage: SoftWfcAco.Bench [width] [depth] [runs] [firstSeed] [options]
+//   --tiles <file>    tile set JSON (default: smoke.json copied next to the executable)
 //   --csv <file>      one row per run
 //   --png <dir>       final map of every run, mismatched edges in red
 //   --frames <dir>    collapse frames of the first run
@@ -40,7 +41,11 @@ int runs = positional.Count > 2 ? int.Parse(positional[2]) : 100;
 int firstSeed = positional.Count > 3 ? int.Parse(positional[3]) : 0;
 int every = options.TryGetValue("every", out string? everyArg) ? int.Parse(everyArg) : 10;
 
-List<TileVariant> variants = TileVariant.Expand(BenchTiles.All);
+string tilesPath = options.TryGetValue("tiles", out string? tilesArg)
+    ? tilesArg
+    : Path.Combine(AppContext.BaseDirectory, "tilesets", "smoke.json");
+string tilesName = Path.GetFileNameWithoutExtension(tilesPath);
+IReadOnlyList<TileVariant> variants = TileSet.Load(tilesPath).Variants;
 
 int successes = 0;
 int invalid = 0;
@@ -56,7 +61,7 @@ if (options.TryGetValue("csv", out string? csvPath))
     }
 
     csv = new StreamWriter(csvPath);
-    csv.WriteLine("seed,width,depth,success,invalid,time_ms");
+    csv.WriteLine("tiles,seed,width,depth,success,invalid,time_ms");
 }
 
 for (int i = 0; i < runs; i++)
@@ -84,7 +89,7 @@ for (int i = 0; i < runs; i++)
 
     // Invariant culture: a Czech locale would write decimal commas into the CSV
     csv?.WriteLine(string.Create(CultureInfo.InvariantCulture,
-        $"{seed},{width},{depth},{(valid ? 1 : 0)},{(ok && !valid ? 1 : 0)},{sw.Elapsed.TotalMilliseconds:F3}"));
+        $"{tilesName},{seed},{width},{depth},{(valid ? 1 : 0)},{(ok && !valid ? 1 : 0)},{sw.Elapsed.TotalMilliseconds:F3}"));
 
     // Images come from a separate, untimed run. RunWFC keeps collapsing after a contradiction
     // without propagating, so its failed maps don't show where generation broke.
@@ -112,7 +117,7 @@ for (int i = 0; i < runs; i++)
 csv?.Dispose();
 
 times.Sort();
-Console.WriteLine($"Pure WFC {width}x{depth}, {runs} runs, seeds {firstSeed}..{firstSeed + runs - 1}");
+Console.WriteLine($"Pure WFC, {tilesName}, {width}x{depth}, {runs} runs, seeds {firstSeed}..{firstSeed + runs - 1}");
 Console.WriteLine($"  success rate:  {100.0 * successes / runs:F1} %");
 if (invalid > 0)
 {
@@ -136,21 +141,4 @@ Cell[,] NewGrid()
     }
 
     return grid;
-}
-
-/// <summary>
-/// Small land/road/water smoke-test tile set. Pure WFC always solves it; contradiction-prone
-/// sets for the hard vs soft comparison are still to be added.
-/// </summary>
-static class BenchTiles
-{
-    public static readonly TileDef[] All =
-    [
-        new TileDef { Name = "grass", Sockets = ["grass", "grass", "grass", "grass"], Weight = 10 },
-        new TileDef { Name = "path_straight", Sockets = ["path", "grass", "path", "grass"], Weight = 1, Rotatable = true },
-        new TileDef { Name = "path_corner", Sockets = ["path", "path", "grass", "grass"], Weight = 1, Rotatable = true },
-        new TileDef { Name = "path_end", Sockets = ["path", "grass", "grass", "grass"], Weight = 0.2f, Rotatable = true },
-        new TileDef { Name = "water", Sockets = ["water", "water", "water", "water"], Weight = 4, Walkable = false },
-        new TileDef { Name = "shore", Sockets = ["water", "grass", "grass", "grass"], Weight = 0.5f, Rotatable = true, Walkable = false },
-    ];
 }
