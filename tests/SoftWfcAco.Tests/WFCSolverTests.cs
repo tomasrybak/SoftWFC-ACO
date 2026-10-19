@@ -35,6 +35,36 @@ namespace SoftWfcAco.Tests
         }
 
         [Fact]
+        public void ForceCollapse_PropagatesToNeighbours()
+        {
+            Cell[,] grid = TestTiles.NewGrid(3, 3, Variants);
+            WFCSolver solver = new WFCSolver(grid, 3, 3, new Random(0));
+            TileVariant water = Variants.First(v => v.Def.Name == "water");
+
+            solver.ForceCollapse(grid[1, 1], [water]);
+
+            Assert.False(solver.HasContradiction);
+            Assert.DoesNotContain(grid[1, 2].AvailableVariants, v => v.Def.Name == "grass");
+        }
+
+        /// <summary>
+        /// Characterization test of a thesis bug kept in the reference (ADR 0001): emptying the cell
+        /// before re-adding the allowed variants raises the contradiction flag, so Propagate does nothing.
+        /// </summary>
+        [Fact]
+        public void SetInitialCell_FlagsContradictionAndDoesNotPropagate()
+        {
+            Cell[,] grid = TestTiles.NewGrid(3, 3, Variants);
+            WFCSolver solver = new WFCSolver(grid, 3, 3, new Random(0));
+            TileVariant water = Variants.First(v => v.Def.Name == "water");
+
+            Assert.True(solver.SetInitialCell(grid[1, 1], [water]));
+
+            Assert.True(solver.HasContradiction);
+            Assert.Contains(grid[1, 2].AvailableVariants, v => v.Def.Name == "grass");
+        }
+
+        [Fact]
         public void SameSeed_GivesTheSameMap()
         {
             (_, Cell[,] first) = Solve(seed: 42);
