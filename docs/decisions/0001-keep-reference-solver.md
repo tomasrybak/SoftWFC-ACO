@@ -11,7 +11,7 @@ compared with the thesis approach, so the thesis behaviour has to stay measurabl
 
 ## Decision
 
-`WFCSolver` stays behaviourally unchanged from here on. New behaviour goes into new code next
+`WFCSolver` and `ACOHybridSolver` stay behaviourally unchanged from here on. New behaviour goes into new code next
 to it. Changes to the reference are limited to fixes that don't alter which map a seed
 produces (for example the uncollapsed-cell counter and the internal setters on `Cell`).
 
@@ -30,5 +30,12 @@ by calling `TryCollapseNextCell` instead of adding hooks to the solver.
 - Known quirks of the thesis solver stay in the reference on purpose and are fixed only in
   new code. Examples: entropy ties are broken by heap insertion order, so cells collapse in
   scan order; after a contradiction `RunWFC` keeps collapsing without propagating.
+- `SetInitialCell` (thesis code, unchanged) empties the cell before re-adding the allowed
+  variants. The empty moment raises the contradiction flag, so the endpoint never propagates
+  and the first dry run in `FindPath` reports a false contradiction. Found 2026-10-19 while
+  setting up the hybrid benchmark; with the thesis setup 38.4 % of hybrid maps on
+  `rslike-overworld` are invalid (mismatch next to an endpoint), see
+  `docs/results/m1-baseline.md`. The bench sets endpoints with `ForceCollapse` instead and keeps
+  the thesis setup behind `--thesis-endpoints`. A characterization test pins the behaviour.
 - Some code is duplicated between the reference and newer solvers. That is accepted for the
   sake of a stable baseline.
